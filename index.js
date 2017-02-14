@@ -3,7 +3,6 @@ const assign = (...obj) => Object.assign({}, ...obj)
 
 const punctuationToken = () => {
   const type = 'punctuation'
-
   return {
     type,
     regexp: /^({|}|\[|]|:|,)/,
@@ -15,7 +14,6 @@ const punctuationToken = () => {
 
 const numberToken = () => {
   const type = 'number'
-
   return {
     type,
 
@@ -29,7 +27,6 @@ const numberToken = () => {
 
 const literalToken = () => {
   const type = 'literal'
-
   return {
     type,
     regexp: /^(true|false|null)/,
@@ -42,7 +39,6 @@ const literalToken = () => {
 
 const stringToken = () => {
   const type = 'string'
-
   return {
     type,
     regexp: /^"\w+"/,
@@ -74,15 +70,13 @@ const tokenizers = [
 
 const tokenize = (
   json,
-  state = {
-    tokens: [],
-    position: { lineno: 1, column: 1 }
-  }
+  tokens = [],
+  position = { lineno: 1, column: 1 }
 ) => {
   let char = json[0]
 
   if (!char) {
-    return state.tokens
+    return tokens
   }
 
   const { tokenizer, str } = tokenizers.reduce((acc, tokenizer) => {
@@ -95,44 +89,44 @@ const tokenize = (
   const token = tokenizer.create(
     str,
     str.length === 1
-      ? state.position
-      : { start: state.position, end: updateColumn(str.length - 1) }
+      ? position
+      : { start: position, end: updateColumn(str.length - 1) }
   )
 
-  switch (tokenizer.type) {
-    case 'whitespace':
-      const lines = str.match(/\n/g)
+  if (tokenizer.type === 'whitespace') {
+    const lines = str.match(/\n/g)
 
-      if (!lines)
-        return next(token)
-
-      const offset = str.lastIndexOf('\n') + lines.length
-
-      const endPosition = {
-        lineno: state.position.lineno + lines.length,
-        column: str.length - offset
-      }
-
-      return next(
-        tokenizer.create(str, { start: state.position, end: endPosition }),
-        assign(endPosition, { column: endPosition.column + 1 })
-      )
-    default:
+    if (!lines)
       return next(token)
+
+    const offset = str.lastIndexOf('\n') + lines.length
+
+    const endPosition = {
+      lineno: position.lineno + lines.length,
+      column: str.length - offset
+    }
+
+    return next(
+      tokenizer.create(str, { start: position, end: endPosition }),
+      assign(endPosition, { column: endPosition.column + 1 })
+    )    
   }
+
+  return next(token)
 
   function updateColumn (column) {
     return {
-      lineno: state.position.lineno,
-      column: state.position.column + column
+      lineno: position.lineno,
+      column: position.column + column
     }
   }
 
-  function next (token, position) {
-    return tokenize(advance(token.raw), {
-      tokens: state.tokens.concat([token]),
-      position: position || updateColumn(token.raw.length)
-    })
+  function next (token, nextPosition) {
+    return tokenize(
+      advance(token.raw),
+      tokens.concat([token]),
+      nextPosition || updateColumn(token.raw.length)
+    )
   }
 
   function match (re) {
