@@ -22,9 +22,9 @@ const validateJson = (t, json, expectedTokens) => {
 
 const validatePositions = (t, json, expectedPositions) => {
   const tokens = tokenize(json)
-  for (var i = 0; i < tokens.length; i++) {
-    t.deepEqual(tokens[i].position, expectedPositions[i])
-  }
+  tokens.forEach((token, i) => {
+    t.deepEqual(token.position, expectedPositions[i])
+  })
 }
 
 test('builtin', (t) => {
@@ -58,7 +58,7 @@ test('numbers', (t) => {
   validateJsonToken(t, '123e-5', { type: 'number', value: 123e-5, raw: '123e-5' })
 })
 
-test('position', (t) => {
+test.only('position', (t) => {
   validatePositions(t, '{', [{ lineno: 1, column: 1 }])
 
   validatePositions(t, '{"test"}', [
@@ -72,16 +72,25 @@ test('position', (t) => {
     { lineno: 2, column: 3 }
   ])
 
-  /* validatePositions(t, '{\n  "bool": true\n}', [
-    { lineno: 0, column: 0 },
-    { start: { lineno: 0, column: 1 }, end: { lineno: 1, column: 3 } },
-    { start: { lineno: 1, column: 3 }, end: { lineno: 1, column: 8 } },
-    { lineno: 1, column: 9 },
-    { lineno: 1, column: 10 },
-    { start: { lineno: 1, column: 11 }, end: { lineno: 1, column: 14 } },
-    { lineno: 1, column: 15 },
-    { lineno: 2, column: 0 },
-  ]) */
+  validatePositions(t, '\n  {', [
+    { start: { lineno: 2, column: 1 }, end: { lineno: 2, column: 2 } },
+    { lineno: 2, column: 3 }
+  ])
+
+  validatePositions(t, '\n {', [
+    { lineno: 2, column: 1 },
+    { lineno: 2, column: 2 }
+  ])
+
+  /*validatePositions(t, '{\n  "bool": true\n}', [
+    { lineno: 1, column: 1 },
+    { start: { lineno: 1, column: 2 }, end: { lineno: 2, column: 2 } },
+    { start: { lineno: 2, column: 3 }, end: { lineno: 2, column: 8 } },
+    { lineno: 2, column: 9 },
+    { lineno: 2, column: 10 },
+    { start: { lineno: 2, column: 11 }, end: { lineno: 2, column: 14 } },
+    { start: { lineno: 2, column: 15 }, end: { lineno: 3, column: 1 }  },
+  ])*/
 })
 
 test('json', (t) => {

@@ -100,6 +100,12 @@ const tokenize = (
       return next(token)
     }
 
+    const startPosition = {
+      // advance to the next line if the whitespace token starts with new lines
+      lineno: position.lineno + (str.match(/^\n+/) || '').length,
+      column: position.column
+    }
+    
     const offset = str.lastIndexOf('\n') + lines.length
 
     const endPosition = {
@@ -108,7 +114,7 @@ const tokenize = (
     }
 
     return next(
-      tokenizer.create(str, { start: position, end: endPosition }),
+      tokenizer.create(str, { start: startPosition, end: endPosition }),
       assign(endPosition, { column: endPosition.column + 1 })
     )
   }
