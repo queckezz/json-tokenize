@@ -1,6 +1,6 @@
 {
   "name": "json-tokenize",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Splits a JSON string into an annotated list of tokens",
   "scripts": {
     "release": "npm run lint && xyz -m X.Y.Z",
