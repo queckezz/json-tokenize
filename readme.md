@@ -3,11 +3,13 @@
 
 Splits a [`JSON`](http://jsonapi.org/) string into an annotated list of [tokens]().
 
-**Screenshot**
+**Screenshot - formatted tokens outputted to stdout**
 
 <p align="center">
   <img src="./tokens.png" />
 </p>
+
+<small><a href='./example.js'>View Example</a></small>
 
 ## Installation
 
