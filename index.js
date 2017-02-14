@@ -17,14 +17,14 @@ const PUNCTUATION_CHARS = [
 
 const createWhitespaceToken = (value, position) => ({
   type: 'whitespace',
-  position,
+  position: position || null,
   value,
   raw: value
 })
 
 const createStringToken = (str, position) => ({
   type: 'string',
-  position,
+  position: position || null,
   value: str.slice(1, -1),
   raw: str
 })
@@ -74,6 +74,10 @@ const tokenizeBuiltin = (str, index, raw, value) => {
   }
 }
 
+const tokenizeNumber = (str, index) => {
+  return {}
+}
+
 const tokenizeLiteral = (str, index) => [
   tokenizeBuiltin(str, index, 'null', null),
   tokenizeBuiltin(str, index, 'true', true),
@@ -101,7 +105,9 @@ const tokenAt = (str, index) => {
   } else if ('"' === char) {
     token = tokenizeString(str, index)
   } else {
-    token = tokenizeLiteral(str, index)
+    token = char === '-' || !isNaN(char)
+      ? tokenizeNumber(str, index)
+      : tokenizeLiteral(str, index)
   }
 
   return token.offset ? token : { offset: 1, token }
