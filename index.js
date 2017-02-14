@@ -1,10 +1,4 @@
 
-/**
- * A token:
- *
- * type, position, value, raw
- */
-
 const WHITESPACE_CHARS = [
   '\t',
   '\n',
@@ -70,26 +64,26 @@ const tokenizeWhitespace = (str, index) => {
   }
 }
 
-const tokenizeLiteral = (str, index) => {
-  if (peek(str, index, 0, 4) === 'true') {
+const tokenizeBuiltin = (str, index, raw, value) => {
+  const offset = raw.length
+  if (peek(str, index, 0, offset) === raw) {
     return {
-      offset: 4,
-      token: { type: 'literal', position: null, raw: 'true', value: true }
-    }
-  } else if (peek(str, index, 0, 4) === 'null') {
-    return {
-      offset: 4,
-      token: { type: 'literal', position: null, raw: 'null', value: null }
-    }
-  } else if (peek(str, index, 0, 5) === 'false') {
-    return {
-      offset: 5,
-      token: { type: 'literal', position: null, raw: 'false', value: false }
+      offset,
+      token: { type: 'literal', position: null, raw, value }
     }
   }
-
-  return {}
 }
+
+const tokenizeLiteral = (str, index) => [
+  tokenizeBuiltin(str, index, 'null', null),
+  tokenizeBuiltin(str, index, 'true', true),
+  tokenizeBuiltin(str, index, 'false', false)
+].reduce((acc, next) => {
+  if (!next || acc)
+    return acc
+
+  return next
+}, null)
 
 const tokenAt = (str, index) => {
   const char = str[index]
@@ -108,7 +102,6 @@ const tokenAt = (str, index) => {
     token = tokenizeString(str, index)
   } else {
     token = tokenizeLiteral(str, index)
-    //token = { type: 'literal' }
   }
 
   return token.offset ? token : { offset: 1, token }
