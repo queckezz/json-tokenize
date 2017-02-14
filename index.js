@@ -1,130 +1,150 @@
 
-const WHITESPACE_CHARS = [
-  '\t',
-  '\n',
-  '\r',
-  ' '
-]
+const assign = (...obj) => Object.assign({}, ...obj)
 
-const PUNCTUATION_CHARS = [
-  '{',
-  '}',
-  '[',
-  ']',
-  ':',
-  ','
-]
+const punctuationToken = () => {
+  const type = 'punctuation'
 
-const createWhitespaceToken = (value, position) => ({
-  type: 'whitespace',
-  position: position || null,
-  value,
-  raw: value
-})
-
-const createStringToken = (str, position) => ({
-  type: 'string',
-  position: position || null,
-  value: str.slice(1, -1),
-  raw: str
-})
-
-const peek = (str, index, from, to) => {
-  if (!to) {
-    return str[index + from]
-  }
-
-  return str.slice(index + from, index + to)
-}
-
-const tokenizeString = (str, index) => {
-  return _tokenizeString(0, '')
-
-  function _tokenizeString (offset, acc) {
-    const char = peek(str, index, offset)
-    const accStr = acc + char
-
-    return char === '"' && offset > 0
-      ? { offset: offset + 1, token: createStringToken(accStr) }
-      : _tokenizeString(offset + 1, accStr )
-  }
-}
-
-const tokenizeWhitespace = (str, index) => {
-  return _tokenizeWhitespace(0, '')
-
-  function _tokenizeWhitespace (offset, acc) {
-    const char = peek(str, index, offset)
-    const nextChar = peek(str, index, offset + 1)
-    const accStr = acc + char
-
-    return !WHITESPACE_CHARS.includes(nextChar)
-      ? { offset: offset + 1, token: createWhitespaceToken(accStr) }
-      : _tokenizeWhitespace(offset + 1, accStr )
-  }
-}
-
-const tokenizeBuiltin = (str, index, raw, value) => {
-  const offset = raw.length
-  if (peek(str, index, 0, offset) === raw) {
-    return {
-      offset,
-      token: { type: 'literal', position: null, raw, value }
+  return {
+    type,
+    regexp: /^({|}|\[|]|:|,)/,
+    create (value, position) {
+      return { type, position, raw: value, value }
     }
   }
 }
 
-const tokenizeNumber = (str, index) => {
-  return {}
+const numberToken = () => {
+  const type = 'number'
+
+  return {
+    type,
+
+    // Thanks Andrew! http://stackoverflow.com/a/13340826
+    regexp: /^(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
+    create (value, position) {
+      return { type, position, raw: value, value: +value }
+    }
+  }
 }
 
-const tokenizeLiteral = (str, index) => [
-  tokenizeBuiltin(str, index, 'null', null),
-  tokenizeBuiltin(str, index, 'true', true),
-  tokenizeBuiltin(str, index, 'false', false)
-].reduce((acc, next) => {
-  if (!next || acc)
-    return acc
+const literalToken = () => {
+  const type = 'literal'
 
-  return next
-}, null)
+  return {
+    type,
+    regexp: /^(true|false|null)/,
+    create (value, position) {
+      const parsedValue = value == 'null' ? null : value == 'true'
+      return { type: 'literal', position, raw: value, value: parsedValue }
+    }
+  }
+}
 
-const tokenAt = (str, index) => {
-  const char = str[index]
+const stringToken = () => {
+  const type = 'string'
+
+  return {
+    type,
+    regexp: /^"\w+"/,
+    create (value, position) {
+      return { type, position, raw: value, value: value.slice(1, -1) }
+    }
+  }
+}
+
+const whitespaceToken = () => {
+  const type = 'whitespace'
+
+  return {
+    type,
+    regexp: /^\s+/,
+    create (value, position) {
+      return { type, position, raw: value, value }
+    }
+  }
+}
+
+const tokenizers = [
+  literalToken(),
+  punctuationToken(),
+  stringToken(),
+  whitespaceToken(),
+  numberToken()
+]
+
+const tokenize = (
+  json,
+  state = {
+    tokens: [],
+    position: { lineno: 1, column: 1 }
+  }
+) => {
+  let char = json[0]
 
   if (!char) {
-    return null
+    return state.tokens
   }
 
-  let token
+  const { tokenizer, str } = tokenizers.reduce((acc, tokenizer) => {
+    if (acc) return acc
+    const str = match(tokenizer.regexp)
+    if (!str) return acc
+    return { tokenizer, str }
+  }, null)
 
-  if (WHITESPACE_CHARS.includes(char)) {
-    token = tokenizeWhitespace(str, index)
-  } else if (PUNCTUATION_CHARS.includes(char)) {
-    token = { type: 'punctuation', position: null, value: char, raw: char }
-  } else if ('"' === char) {
-    token = tokenizeString(str, index)
-  } else {
-    token = char === '-' || !isNaN(char)
-      ? tokenizeNumber(str, index)
-      : tokenizeLiteral(str, index)
+  const token = tokenizer.create(
+    str,
+    str.length === 1
+      ? state.position
+      : { start: state.position, end: updateColumn(str.length - 1) }
+  )
+
+  switch (tokenizer.type) {
+    case 'whitespace':
+      const lines = str.match(/\n/g)
+
+      if (!lines)
+        return next(token)
+
+      const offset = str.lastIndexOf('\n') + lines.length
+
+      const endPosition = {
+        lineno: state.position.lineno + lines.length,
+        column: str.length - offset
+      }
+
+      return next(
+        tokenizer.create(str, { start: state.position, end: endPosition }),
+        assign(endPosition, { column: endPosition.column + 1 })
+      )
+    default:
+      return next(token)
   }
 
-  return token.offset ? token : { offset: 1, token }
-}
-
-const tokenizeAtPosition = (str, index, tokens) => {
-  const next = tokenAt(str, index)
-
-  if (!next) {
-    return tokens
+  function updateColumn (column) {
+    return {
+      lineno: state.position.lineno,
+      column: state.position.column + column
+    }
   }
 
-  return tokenizeAtPosition(str, index + next.offset, tokens.concat([next.token]))
-}
+  function next (token, position) {
+    return tokenize(advance(token.raw), {
+      tokens: state.tokens.concat([token]),
+      position: position || updateColumn(token.raw.length)
+    })
+  }
 
-const tokenize = (str) => {
-  return tokenizeAtPosition(str, 0, [])
+  function match (re) {
+    const m = re.exec(json)
+    if (!m) return
+    const str = m[0]
+    return str
+  }
+
+  function advance (str) {
+    return json.slice(str.length)
+  }
 }
 
 module.exports = tokenize
