@@ -1,72 +1,42 @@
 
 const assign = (...obj) => Object.assign({}, ...obj)
 
-const punctuationToken = () => {
-  const type = 'punctuation'
-  return {
-    type,
-    regexp: /^({|}|\[|]|:|,)/,
-    create (value, position) {
-      return { type, position, raw: value, value }
-    }
+const matchPunctuation = {
+  regexp: /^({|}|\[|]|:|,)/,
+  create (value, position) {
+    return { type: 'punctuation', position, raw: value, value }
   }
 }
 
-const numberToken = () => {
-  const type = 'number'
-  return {
-    type,
-
-    // Thanks Andrew! http://stackoverflow.com/a/13340826
-    regexp: /^(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
-    create (value, position) {
-      return { type, position, raw: value, value: +value }
-    }
+const matchNumber = {
+  // Thanks Andrew! http://stackoverflow.com/a/13340826
+  regexp: /^(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
+  create (value, position) {
+    return { type: 'number', position, raw: value, value: +value }
   }
 }
 
-const literalToken = () => {
-  const type = 'literal'
-  return {
-    type,
-    regexp: /^(true|false|null)/,
-    create (value, position) {
-      const parsedValue = value === 'null' ? null : value === 'true'
-      return { type: 'literal', position, raw: value, value: parsedValue }
-    }
+const matchLiteral = {
+  regexp: /^(true|false|null)/,
+  create (value, position) {
+    const parsedValue = value === 'null' ? null : value === 'true'
+    return { type: 'literal', position, raw: value, value: parsedValue }
   }
 }
 
-const stringToken = () => {
-  const type = 'string'
-  return {
-    type,
-    regexp: /^"\w+"/,
-    create (value, position) {
-      return { type, position, raw: value, value: value.slice(1, -1) }
-    }
+const matchString = {
+  regexp: /^"\w+"/,
+  create (value, position) {
+    return { type: 'string', position, raw: value, value: value.slice(1, -1) }
   }
 }
 
-const whitespaceToken = () => {
-  const type = 'whitespace'
-
-  return {
-    type,
-    regexp: /^\s+/,
-    create (value, position) {
-      return { type, position, raw: value, value }
-    }
+const matchWhitespace = {
+  regexp: /^\s+/,
+  create (value, position) {
+    return { type: 'whitespace', position, raw: value, value }
   }
 }
-
-const tokenizers = [
-  literalToken(),
-  punctuationToken(),
-  stringToken(),
-  whitespaceToken(),
-  numberToken()
-]
 
 const tokenize = (
   json,
@@ -79,43 +49,33 @@ const tokenize = (
     return tokens
   }
 
-  const { tokenizer, str } = tokenizers.reduce((acc, tokenizer) => {
+  const { createToken, str } = [
+    matchPunctuation,
+    matchWhitespace,
+    matchLiteral,
+    matchString,
+    matchNumber
+  ].reduce((acc, tokenizer) => {
     if (acc) return acc
     const str = match(tokenizer.regexp)
     if (!str) return acc
-    return { tokenizer, str }
+    return { createToken: tokenizer.create, str }
   }, null)
 
-  const token = tokenizer.create(
+  const token = createToken(
     str,
     str.length === 1
       ? position
       : { start: position, end: updateColumn(str.length - 1) }
   )
 
-  if (tokenizer.type === 'whitespace') {
-    const lines = str.match(/\n/g)
+  const lines = str.match(/^\n+/g)
 
-    if (!lines) {
-      return next(token)
-    }
-
-    const startPosition = {
-      // advance to the next line if the whitespace token starts with new lines
-      lineno: position.lineno + (str.match(/^\n+/) || '').length,
-      column: position.column
-    }
-    
-    const offset = str.lastIndexOf('\n') + lines.length
-
-    const endPosition = {
-      lineno: position.lineno + lines.length,
-      column: str.length - offset
-    }
-
-    return next(
-      tokenizer.create(str, { start: startPosition, end: endPosition }),
-      assign(endPosition, { column: endPosition.column + 1 })
+  if (lines) {
+    return tokenize(
+      advance(lines),
+      tokens,
+      { lineno: position.lineno + lines.length, column: 1 }
     )
   }
 
@@ -149,4 +109,3 @@ const tokenize = (
 }
 
 module.exports = tokenize
-module.exports.tokenizers = tokenizers

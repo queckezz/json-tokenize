@@ -58,18 +58,13 @@ test('numbers', (t) => {
   validateJsonToken(t, '123e-5', { type: 'number', value: 123e-5, raw: '123e-5' })
 })
 
-test.only('position', (t) => {
+test('position', (t) => {
   validatePositions(t, '{', [{ lineno: 1, column: 1 }])
 
   validatePositions(t, '{"test"}', [
     { lineno: 1, column: 1 },
     { start: { lineno: 1, column: 2 }, end: { lineno: 1, column: 7 } },
     { lineno: 1, column: 8 }
-  ])
-
-  validatePositions(t, ' \n  {', [
-    { start: { lineno: 1, column: 1 }, end: { lineno: 2, column: 2 } },
-    { lineno: 2, column: 3 }
   ])
 
   validatePositions(t, '\n  {', [
@@ -82,15 +77,15 @@ test.only('position', (t) => {
     { lineno: 2, column: 2 }
   ])
 
-  /*validatePositions(t, '{\n  "bool": true\n}', [
+  validatePositions(t, '{\n  "bool": true\n}', [
     { lineno: 1, column: 1 },
-    { start: { lineno: 1, column: 2 }, end: { lineno: 2, column: 2 } },
+    { start: { lineno: 2, column: 1 }, end: { lineno: 2, column: 2 } },
     { start: { lineno: 2, column: 3 }, end: { lineno: 2, column: 8 } },
     { lineno: 2, column: 9 },
     { lineno: 2, column: 10 },
     { start: { lineno: 2, column: 11 }, end: { lineno: 2, column: 14 } },
-    { start: { lineno: 2, column: 15 }, end: { lineno: 3, column: 1 }  },
-  ])*/
+    { lineno: 3, column: 1 }
+  ])
 })
 
 test('json', (t) => {
