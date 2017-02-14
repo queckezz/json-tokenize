@@ -1,6 +1,4 @@
 
-const assign = (...obj) => Object.assign({}, ...obj)
-
 const matchPunctuation = {
   regexp: /^({|}|\[|]|:|,)/,
   create (value, position) {
