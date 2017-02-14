@@ -5,7 +5,9 @@ Splits a [`JSON`](http://jsonapi.org/) string into an annotated list of [tokens]
 
 **Screenshot**
 
-![Generated tokens](./tokens.png)
+<p align="center">
+  <img src="./tokens.png" />
+</p>
 
 ## Installation
 
