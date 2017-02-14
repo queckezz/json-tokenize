@@ -1,6 +1,6 @@
 
 # `json-tokenize` [![Build status][travis-image]][travis-url] [![NPM version][version-image]][version-url] [![Dependency Status][david-image]][david-url] [![License][license-image]][license-url] [![Js Standard Style][standard-image]][standard-url]
-Splits a [`JSON`](http://jsonapi.org/) string into an annotated list of [tokens](#Tokens).
+Splits a [`JSON`](http://jsonapi.org/) string into an annotated list of [tokens](#tokens).
 
 * Keeps track of a tokens position
 * Whitespace significant
