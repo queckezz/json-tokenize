@@ -7,6 +7,8 @@
     "test": "ava"
   },
   "devDependencies": {
-    "ava": "^0.18.1"
+    "ava": "^0.18.1",
+    "chalk": "^1.1.3",
+    "lpad-align": "^1.1.0"
   }
 }

@@ -142,3 +142,4 @@ const tokenize = (
 }
 
 module.exports = tokenize
+module.exports.tokenizers = tokenizers
