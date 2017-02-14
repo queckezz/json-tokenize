@@ -31,7 +31,7 @@ const literalToken = () => {
     type,
     regexp: /^(true|false|null)/,
     create (value, position) {
-      const parsedValue = value == 'null' ? null : value == 'true'
+      const parsedValue = value === 'null' ? null : value === 'true'
       return { type: 'literal', position, raw: value, value: parsedValue }
     }
   }
@@ -96,8 +96,9 @@ const tokenize = (
   if (tokenizer.type === 'whitespace') {
     const lines = str.match(/\n/g)
 
-    if (!lines)
+    if (!lines) {
       return next(token)
+    }
 
     const offset = str.lastIndexOf('\n') + lines.length
 
@@ -109,7 +110,7 @@ const tokenize = (
     return next(
       tokenizer.create(str, { start: position, end: endPosition }),
       assign(endPosition, { column: endPosition.column + 1 })
-    )    
+    )
   }
 
   return next(token)

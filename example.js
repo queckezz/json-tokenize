@@ -1,12 +1,11 @@
 
-const indentString = require('indent-string')
 const lpadAlign = require('lpad-align')
 const tokenize = require('./')
 const chalk = require('chalk')
 
 const obj = {
   a: 12e5,
-  b: "helloworld"
+  b: 'helloworld'
 }
 
 const tokens = tokenize(JSON.stringify(obj, null, 2))

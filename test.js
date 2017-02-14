@@ -49,13 +49,13 @@ test('punctuation', (t) => {
 })
 
 test('numbers', (t) => {
-    validateJsonToken(t, '1', { type: 'number', value: 1, raw: '1' })
-    validateJsonToken(t, '1.0', { type: 'number', value: 1, raw: '1.0' })
-    validateJsonToken(t, '1.000', { type: 'number', value: 1, raw: '1.000' })
-    validateJsonToken(t, '1.5', { type: 'number', value: 1.5, raw: '1.5' })
-    validateJsonToken(t, '-1.5', { type: 'number', value: -1.5, raw: '-1.5' })
-    validateJsonToken(t, '123e5', { type: 'number', value: 123e5, raw: '123e5' })
-    validateJsonToken(t, '123e-5', { type: 'number', value: 123e-5, raw: '123e-5' })
+  validateJsonToken(t, '1', { type: 'number', value: 1, raw: '1' })
+  validateJsonToken(t, '1.0', { type: 'number', value: 1, raw: '1.0' })
+  validateJsonToken(t, '1.000', { type: 'number', value: 1, raw: '1.000' })
+  validateJsonToken(t, '1.5', { type: 'number', value: 1.5, raw: '1.5' })
+  validateJsonToken(t, '-1.5', { type: 'number', value: -1.5, raw: '-1.5' })
+  validateJsonToken(t, '123e5', { type: 'number', value: 123e5, raw: '123e5' })
+  validateJsonToken(t, '123e-5', { type: 'number', value: 123e-5, raw: '123e-5' })
 })
 
 test('position', (t) => {
@@ -64,15 +64,15 @@ test('position', (t) => {
   validatePositions(t, '{"test"}', [
     { lineno: 1, column: 1 },
     { start: { lineno: 1, column: 2 }, end: { lineno: 1, column: 7 } },
-    { lineno: 1, column: 8 },
+    { lineno: 1, column: 8 }
   ])
 
   validatePositions(t, ' \n  {', [
     { start: { lineno: 1, column: 1 }, end: { lineno: 2, column: 2 } },
-    { lineno: 2, column: 3 },
+    { lineno: 2, column: 3 }
   ])
 
-  /*validatePositions(t, '{\n  "bool": true\n}', [
+  /* validatePositions(t, '{\n  "bool": true\n}', [
     { lineno: 0, column: 0 },
     { start: { lineno: 0, column: 1 }, end: { lineno: 1, column: 3 } },
     { start: { lineno: 1, column: 3 }, end: { lineno: 1, column: 8 } },
@@ -81,7 +81,7 @@ test('position', (t) => {
     { start: { lineno: 1, column: 11 }, end: { lineno: 1, column: 14 } },
     { lineno: 1, column: 15 },
     { lineno: 2, column: 0 },
-  ])*/
+  ]) */
 })
 
 test('json', (t) => {
