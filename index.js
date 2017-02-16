@@ -23,7 +23,7 @@ const matchLiteral = {
 }
 
 const matchString = {
-  regexp: /^"\w+"/,
+  regexp: /^"[^"]+"/,
   create (value, position) {
     return { type: 'string', position, raw: value, value: value.slice(1, -1) }
   }

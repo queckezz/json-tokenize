@@ -35,6 +35,7 @@ test('builtin', (t) => {
 
 test('strings', (t) => {
   validateJsonToken(t, '"hello"', { type: 'string', raw: '"hello"', value: 'hello' })
+  validateJsonToken(t, '"hello world"', { type: 'string', raw: '"hello world"', value: 'hello world' })
 })
 
 test('whitespace', (t) => {
