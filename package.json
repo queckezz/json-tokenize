@@ -1,6 +1,6 @@
 {
   "name": "json-tokenize",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Splits a JSON string into an annotated list of tokens",
   "scripts": {
     "release": "npm run lint && xyz -m X.Y.Z",
@@ -16,13 +16,13 @@
     "tokens",
     "lexer",
     "lexical analysis"
-  ],  
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/queckezz/json-tokenize"
   },
-  "author": "queckezz <fabian.eichenberger@gmail.com>",  
+  "author": "queckezz <fabian.eichenberger@gmail.com>",
   "devDependencies": {
     "ava": "^0.18.1",
     "buble": "^0.15.2",
