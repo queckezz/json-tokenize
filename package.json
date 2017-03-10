@@ -1,6 +1,6 @@
 {
   "name": "json-tokenize",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Splits a JSON string into an annotated list of tokens",
   "main": "dist.js",
   "license": "MIT",
