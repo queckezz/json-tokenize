@@ -1,40 +1,58 @@
 
-const matchPunctuation = {
-  regexp: /^({|}|\[|]|:|,)/,
-  create (value, position) {
-    return { type: 'punctuation', position, raw: value, value }
-  }
-}
 
-const matchNumber = {
-  // Thanks Andrew! http://stackoverflow.com/a/13340826
-  regexp: /^(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
-  create (value, position) {
-    return { type: 'number', position, raw: value, value: +value }
-  }
-}
+const tokenizers = [
+  {
+    regexp: /^\s+/,
+    create: (value, position) => ({
+      type: 'whitespace',
+      position,
+      raw: value,
+      value
+    })
+  },
 
-const matchLiteral = {
-  regexp: /^(true|false|null)/,
-  create (value, position) {
-    const parsedValue = value === 'null' ? null : value === 'true'
-    return { type: 'literal', position, raw: value, value: parsedValue }
-  }
-}
+  {
+    regexp: /^"[^"]+"/,
+    create: (value, position) => ({
+      type: 'string',
+      position,
+      raw: value,
+      value: value.slice(1, -1)
+    })
+  },
 
-const matchString = {
-  regexp: /^"[^"]+"/,
-  create (value, position) {
-    return { type: 'string', position, raw: value, value: value.slice(1, -1) }
-  }
-}
+  {
+    regexp: /^(true|false|null)/,
+    create: (value, position) => ({
+      type: 'literal',
+      position,
+      raw: value,
+      value: value === 'null'
+        ? null
+        : value === 'true'
+    })
+  },
 
-const matchWhitespace = {
-  regexp: /^\s+/,
-  create (value, position) {
-    return { type: 'whitespace', position, raw: value, value }
+  {
+    regexp: /^(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
+    create: (value, position) => ({
+      type: 'number',
+      position,
+      raw: value,
+      value: +value
+    })
+  },
+
+  {
+    regexp: /^({|}|\[|]|:|,)/,
+    create: (value, position) => ({
+      type: 'punctuation',
+      position,
+      raw: value,
+      value
+    })
   }
-}
+]
 
 const tokenize = (
   json,
@@ -47,13 +65,7 @@ const tokenize = (
     return tokens
   }
 
-  const { createToken, str } = [
-    matchPunctuation,
-    matchWhitespace,
-    matchLiteral,
-    matchString,
-    matchNumber
-  ].reduce((acc, tokenizer) => {
+  const { createToken, str } = tokenizers.reduce((acc, tokenizer) => {
     if (acc) return acc
     const str = match(tokenizer.regexp)
     if (!str) return acc
