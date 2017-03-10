@@ -1,5 +1,5 @@
 
-const tokenizers = [
+const tokenTypes = [
   {
     regexp: /^\s+/,
     create: (value, position) => ({
@@ -66,11 +66,15 @@ const tokenize = (
     return tokens
   }
 
-  const { createToken, str } = tokenizers.reduce((acc, tokenizer) => {
+  const [createToken, str] = tokenTypes.reduce((acc, type) => {
     if (acc) return acc
-    const str = match(tokenizer.regexp)
+    const str = match(type.regexp)
     if (!str) return acc
-    return { createToken: tokenizer.create, str }
+
+    return [
+      type.create,
+      str
+    ]
   }, null)
 
   const token = createToken(
