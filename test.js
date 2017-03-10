@@ -1,5 +1,5 @@
 
-const tokenize = require('./')
+const tokenize = require('./index')
 const test = require('ava')
 
 const validateToken = (t, token, expectedToken) => {
