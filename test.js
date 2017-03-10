@@ -107,3 +107,20 @@ test('json', (t) => {
     { type: 'punctuation', raw: '}', value: '}' }
   ])
 })
+
+test('double-encoded json', (t) => {
+  const inner = JSON.stringify({ x: 1, y: '2' })
+  const outer = JSON.stringify({ type: 'blob', data: inner })
+  const innerEnc = JSON.stringify(inner)
+  validateJson(t, outer, [
+    { type: 'punctuation', raw: '{', value: '{' },
+    { type: 'string', raw: '"type"', value: 'type' },
+    { type: 'punctuation', raw: ':', value: ':' },
+    { type: 'string', raw: '"blob"', value: 'blob' },
+    { type: 'punctuation', raw: ',', value: ',' },
+    { type: 'string', raw: '"data"', value: 'data' },
+    { type: 'punctuation', raw: ':', value: ':' },
+    { type: 'string', raw: innerEnc, value: inner },
+    { type: 'punctuation', raw: '}', value: '}' }
+  ])
+})

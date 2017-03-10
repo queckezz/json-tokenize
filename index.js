@@ -1,5 +1,4 @@
 
-
 const tokenizers = [
   {
     regexp: /^\s+/,
@@ -12,12 +11,14 @@ const tokenizers = [
   },
 
   {
-    regexp: /^"[^"]+"/,
+    regexp: /^"(?:[^"\\]|\\.)*"/,
     create: (value, position) => ({
       type: 'string',
       position,
       raw: value,
-      value: value.slice(1, -1)
+      value: value
+        .slice(1, -1)
+        .replace(/\\"/g, '"')
     })
   },
 
